@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package random;
 
+import "customer.proto";
+
 service Random {
     rpc SayHello(SayHelloRequest) returns (SayHelloResponse) {};
     rpc GetUsers(Empty) returns (UserList) {};

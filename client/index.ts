@@ -1,9 +1,11 @@
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import path from "path";
+import readline from "readline";
 
 import { ProtoGrpcType } from "../proto/random";
 
+// The proto file is responsible for serializing the data before sending
 const PROTO_FILE = "../proto/random.proto";
 
 const packageDef = protoLoader.loadSync(path.resolve(__dirname, PROTO_FILE), {
@@ -13,31 +15,32 @@ const packageDef = protoLoader.loadSync(path.resolve(__dirname, PROTO_FILE), {
   arrays: true,
 });
 
-const RandomService = (
-  grpc.loadPackageDefinition(packageDef) as unknown as ProtoGrpcType
-).random.Random;
+const packageObject = grpc.loadPackageDefinition(
+  packageDef
+) as unknown as ProtoGrpcType;
 
-const client = new RandomService(
+const RandomService = packageObject.random.Random;
+const CustomerService = packageObject.customer.CustomerService;
+
+export const randomService = new RandomService(
   "localhost:8000",
   grpc.credentials.createInsecure()
 );
 
-client.SayHello({ name: "Tanyo" }, (err, data) => {
-  if (err) {
-    console.log(err);
-    return;
-  }
+export const customerService = new CustomerService(
+  "localhost:8000",
+  grpc.credentials.createInsecure()
+);
 
-  console.log(data);
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
 });
 
-client.GetUsers({}, (err, data) => {
-  if (err) {
-    console.log(err);
-    return;
-  }
+rl.question("Tell me your name: ", (name) => {
+  randomService.SayHello({ name }, (err, data) => {
+    console.log(data?.message);
 
-  console.log(data);
+    rl.close();
+  });
 });
-
-export default client;

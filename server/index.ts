@@ -5,6 +5,7 @@ import path from "path";
 import { ProtoGrpcType } from "../proto/random";
 import { RandomHandlers } from "../proto/random/Random";
 import { User } from "../proto/random/User";
+import { CustomerServiceHandlers } from "../proto/customer/CustomerService";
 
 const serverPort = 8000;
 
@@ -22,8 +23,10 @@ const users: User[] = [
 ];
 
 function main() {
+  // The server is responsible for deserialization of the incoming data and call
   const server = new grpc.Server();
 
+  // Random Service
   // proto file ---> package
   server.addService(grpcObject.random.Random.service, {
     SayHello: (call, callback) => {
@@ -36,6 +39,12 @@ function main() {
       callback(null, { users });
     },
   } as RandomHandlers);
+
+  // Customer Service (imported in the random.proto file)
+  server.addService(
+    grpcObject.customer.CustomerService.service,
+    {} as CustomerServiceHandlers
+  );
 
   server.bindAsync(
     `localhost:${serverPort}`,

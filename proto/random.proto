@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package random;
+
+service Random {
+    rpc SayHello(SayHelloRequest) returns (SayHelloResponse) {};
+    rpc GetUsers(Empty) returns (UserList) {};
+}
+
+
+message Empty {}
+
+
+message User {
+    string id = 1;
+    string name = 2;
+    int32 age = 3;
+}
+
+message UserList {
+    repeated User users = 1;
+}
+
+message SayHelloRequest {
+    string name = 1;
+}
+
+message SayHelloResponse {
+    string message = 1;
+}
+

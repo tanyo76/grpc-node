@@ -1,6 +1,7 @@
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import path from "path";
+import { ReflectionService } from "@grpc/reflection";
 
 import { ProtoGrpcType } from "../proto/random";
 import { RandomHandlers } from "../proto/random/Random";
@@ -25,6 +26,9 @@ const users: User[] = [
 function main() {
   // The server is responsible for deserialization of the incoming data and call
   const server = new grpc.Server();
+  const reflection = new ReflectionService(packageDef);
+
+  reflection.addToServer(server);
 
   // Random Service
   // proto file ---> package

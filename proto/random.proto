@@ -3,6 +3,8 @@ syntax = "proto3";
 package random;
 
 import "customer.proto";
+import "authenticate.proto";
+
 
 service Random {
     rpc SayHello(SayHelloRequest) returns (SayHelloResponse) {};
@@ -11,7 +13,6 @@ service Random {
 
 
 message Empty {}
-
 
 message User {
     string id = 1;

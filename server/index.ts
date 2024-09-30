@@ -7,6 +7,12 @@ import { ProtoGrpcType } from "../proto/random";
 import { RandomHandlers } from "../proto/random/Random";
 import { User } from "../proto/random/User";
 import { CustomerServiceHandlers } from "../proto/customer/CustomerService";
+import { AuthenticateHandlers } from "../proto/authenticate/Authenticate";
+import {
+  authenticate,
+  getAuthHeader,
+  validateAccessToken,
+} from "../utils/jsonwebtoken";
 
 const serverPort = 8000;
 
@@ -24,13 +30,12 @@ const users: User[] = [
 ];
 
 function main() {
-  // The server is responsible for deserialization of the incoming data and call
   const server = new grpc.Server();
   const reflection = new ReflectionService(packageDef);
 
   reflection.addToServer(server);
 
-  // Random Service
+  // :TODO Add auth middleware
   // proto file ---> package
   server.addService(grpcObject.random.Random.service, {
     SayHello: (call, callback) => {
@@ -40,7 +45,12 @@ function main() {
       }
     },
     GetUsers: (call, callback) => {
-      callback(null, { users });
+      try {
+        const client = validateAccessToken(call);
+        callback(null, { users });
+      } catch (err: any) {
+        callback({ code: grpc.status.UNAUTHENTICATED, message: err.message });
+      }
     },
   } as RandomHandlers);
 
@@ -49,6 +59,26 @@ function main() {
     grpcObject.customer.CustomerService.service,
     {} as CustomerServiceHandlers
   );
+
+  server.addService(grpcObject.authenticate.Authenticate.service, {
+    Authenticate: (call, callback) => {
+      try {
+        if (call.request.clientId && call.request.clientSecret) {
+          const { clientId, clientSecret } = call.request;
+          const accessToken = authenticate(clientId, clientSecret);
+
+          callback(null, { bearerToken: accessToken });
+        } else {
+          throw Error("Missing required fields");
+        }
+      } catch (err: any) {
+        return callback({
+          code: grpc.status.INVALID_ARGUMENT,
+          message: err.message,
+        });
+      }
+    },
+  } as AuthenticateHandlers);
 
   server.bindAsync(
     `localhost:${serverPort}`,

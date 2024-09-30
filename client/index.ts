@@ -1,7 +1,6 @@
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import path from "path";
-import readline from "readline";
 
 import { ProtoGrpcType } from "../proto/random";
 
@@ -21,26 +20,23 @@ const packageObject = grpc.loadPackageDefinition(
 
 const RandomService = packageObject.random.Random;
 const CustomerService = packageObject.customer.CustomerService;
+const AuthenticateService = packageObject.authenticate.Authenticate;
 
-export const randomService = new RandomService(
+export const randomStub = new RandomService(
   "localhost:8000",
   grpc.credentials.createInsecure()
 );
 
-export const customerService = new CustomerService(
+export const authStub = new AuthenticateService(
   "localhost:8000",
   grpc.credentials.createInsecure()
 );
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+export const customerStub = new CustomerService(
+  "localhost:8000",
+  grpc.credentials.createInsecure()
+);
 
-rl.question("Tell me your name: ", (name) => {
-  randomService.SayHello({ name }, (err, data) => {
-    console.log(data?.message);
-
-    rl.close();
-  });
+authStub.Authenticate({ clientId: "fmi", clientSecret: "fmi" }, (err, data) => {
+  console.log(data);
 });

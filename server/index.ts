@@ -9,8 +9,7 @@ import { CustomerServiceHandlers } from "../proto/customer/CustomerService";
 import { AuthenticateHandlers } from "../proto/authenticate/Authenticate";
 import { authenticate, validateAccessToken } from "../utils/jsonwebtoken";
 import { users } from "../data/users";
-
-const serverPort = 8000;
+import env_config from "../config/env_config";
 
 const PROTO_FILE = "../proto/random.proto";
 
@@ -70,7 +69,7 @@ function main() {
   } as AuthenticateHandlers);
 
   server.bindAsync(
-    `localhost:${serverPort}`,
+    `localhost:${env_config.grpc_server_port}`,
     grpc.ServerCredentials.createInsecure(), // without SSL
     (err, port) => {
       if (err) {

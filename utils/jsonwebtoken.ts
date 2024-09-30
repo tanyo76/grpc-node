@@ -1,9 +1,10 @@
 import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
 import clients from "../data/clients";
 import { ServerUnaryCall } from "@grpc/grpc-js";
+import env_config from "../config/env_config";
 
 // base64 encoded
-const signSecret = btoa("Test@123");
+const jwtSignSecret = btoa(env_config.jwt_secret);
 
 export const authenticate = (clientId: string, clientSecret: string) => {
   const foundClient = clients.find(
@@ -15,8 +16,8 @@ export const authenticate = (clientId: string, clientSecret: string) => {
     throw Error("Invalid credentials");
   }
 
-  return jsonwebtoken.sign({ clientId: foundClient.clientId }, signSecret, {
-    expiresIn: "1h",
+  return jsonwebtoken.sign({ clientId: foundClient.clientId }, jwtSignSecret, {
+    expiresIn: env_config.jwt_expiration_time,
   });
 };
 
@@ -30,7 +31,7 @@ export const validateAccessToken = (call: ServerUnaryCall<any, any>) => {
   try {
     const bearerToken = getAuthHeader(call);
     const token = bearerToken.split(" ")[1];
-    const payload = jsonwebtoken.verify(token, signSecret) as IJwtPayload;
+    const payload = jsonwebtoken.verify(token, jwtSignSecret) as IJwtPayload;
 
     const client = clients.find(
       (client) => client.clientId == payload.clientId

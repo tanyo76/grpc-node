@@ -1,9 +1,6 @@
-interface IClientsObject {
-  clientId: string;
-  clientSecret: string;
-}
+import { ClientCredentialRequest } from "../proto/authenticate/ClientCredentialRequest";
 
-const clients: IClientsObject[] = [
+const clients: ClientCredentialRequest[] = [
   { clientId: "fmi", clientSecret: "fmi" },
   { clientId: "fmi2", clientSecret: "fmi2" },
 ];

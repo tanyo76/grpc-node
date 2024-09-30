@@ -32,11 +32,24 @@ export const authStub = new AuthenticateService(
   grpc.credentials.createInsecure()
 );
 
+var meta = new grpc.Metadata();
+
 export const customerStub = new CustomerService(
   "localhost:8000",
   grpc.credentials.createInsecure()
 );
 
 authStub.Authenticate({ clientId: "fmi", clientSecret: "fmi" }, (err, data) => {
-  console.log(data);
+  console.log("Bearer token", data);
+  const bearerToken = `Bearer ${data?.bearerToken}`;
+
+  meta.add("authorization", bearerToken);
+
+  randomStub.GetUsers({}, meta, (err, data) => {
+    if (err) {
+      return console.log(err);
+    }
+
+    console.log(data);
+  });
 });

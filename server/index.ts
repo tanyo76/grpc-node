@@ -5,14 +5,10 @@ import { ReflectionService } from "@grpc/reflection";
 
 import { ProtoGrpcType } from "../proto/random";
 import { RandomHandlers } from "../proto/random/Random";
-import { User } from "../proto/random/User";
 import { CustomerServiceHandlers } from "../proto/customer/CustomerService";
 import { AuthenticateHandlers } from "../proto/authenticate/Authenticate";
-import {
-  authenticate,
-  getAuthHeader,
-  validateAccessToken,
-} from "../utils/jsonwebtoken";
+import { authenticate, validateAccessToken } from "../utils/jsonwebtoken";
+import { users } from "../data/users";
 
 const serverPort = 8000;
 
@@ -24,19 +20,12 @@ const grpcObject = grpc.loadPackageDefinition(
   packageDef
 ) as unknown as ProtoGrpcType;
 
-const users: User[] = [
-  { id: "1", name: "Tanyo", age: 24 },
-  { id: "2", name: "Gergana", age: 22 },
-];
-
 function main() {
   const server = new grpc.Server();
   const reflection = new ReflectionService(packageDef);
 
   reflection.addToServer(server);
 
-  // :TODO Add auth middleware
-  // proto file ---> package
   server.addService(grpcObject.random.Random.service, {
     SayHello: (call, callback) => {
       if (call.request.name) {
